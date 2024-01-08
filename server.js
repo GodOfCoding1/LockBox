@@ -35,7 +35,7 @@ app.post("/image", upload.single("image"), async (req, res) => {
 
   if (req.file) {
     let cld_upload_stream = cloudinary.uploader.upload_stream(
-      { folder: "test" },
+      { folder: "faultyImages" },
       function (error, result) {
         console.log(error, result);
         res.json({ public_id: result.public_id, url: result.secure_url });
