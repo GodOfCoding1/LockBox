@@ -1,0 +1,39 @@
+{
+  "name": "corrupted-images",
+  "version": "1.0.1",
+  "description": "A api for encrypted files",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GodOfCoding1/encrypt-files-api.git"
+  },
+  "author": "Cameron Thompson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GodOfCoding1/encrypt-files-api/issues"
+  },
+  "homepage": "https://github.com/GodOfCoding1/encrypt-files-api#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.41.2",
+    "dotenv": "^8.2.0",
+    "ejs": "^3.1.5",
+    "express": "^4.17.1",
+    "express-ejs-layouts": "^2.5.0",
+    "express-session": "^1.17.1",
+    "mongoose": "^5.11.8",
+    "multer": "^1.4.5-lts.1",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
+    "streamifier": "^0.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

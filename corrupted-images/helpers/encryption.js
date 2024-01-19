@@ -7,7 +7,7 @@ const publicKeyPath = "keys/public.pem";
 const AESKeyPath = "keys/public.key";
 const PADDING = 16;
 
-const generateLocalKeyPair = () => {
+export const generateLocalKeyPair = () => {
   const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
     modulusLength: 4096,
     publicKeyEncoding: {
@@ -76,25 +76,20 @@ const decryptBufferWithPrivateKey = async (buffer, password) => {
   return crypto.privateDecrypt(privateKey, buffer); //returns buffer
 };
 
-const imagePath = "sample.jpeg";
-const encryptImageBuffer = (imagePath) => {
+export const encryptImageBuffer = (buffer) => {
   const password = generateRandomPassword();
-  fs.writeFileSync("sampleData/aes.key", encryptWithPublicKey(password));
-  return aesEncrypt(fs.readFileSync(imagePath), generateAesKey(password));
+  return {
+    buffer: aesEncrypt(buffer, generateAesKey(password)),
+    encryptedHash: encryptWithPublicKey(password),
+  };
 };
-const decryptImage = async (imagePath, password) => {
-  const encryptedPasswordBuffer = await fs.promises.readFile(
-    "sampleData/aes.key"
-  );
+
+export const decryptImageBuffer = async (buffer, encryptedHash, password) => {
   const passwordOfImage = await decryptBufferWithPrivateKey(
-    encryptedPasswordBuffer,
+    encryptedHash,
     password
   );
-  await fs.promises.writeFile(
-    imagePath,
-    aesDecrypt(fs.readFileSync(imagePath), generateAesKey(passwordOfImage))
-  );
-  console.log("image decoded!");
+  return aesDecrypt(buffer, generateAesKey(passwordOfImage));
 };
 // encryptImage(imagePath);
 // decryptImage(imagePath, "");
@@ -140,9 +135,10 @@ const downloadAllImages = (imageUrls) => {
     decryptImage(imagePath, "@01");
   });
 };
+
 // uploadImage(encryptImageBuffer("sampleData/sample.jpeg"));
-const run = async () => {
-  const images = await fetchAllImages();
-  downloadAllImages(images);
-};
-run();
+// const run = async () => {
+//   const images = await fetchAllImages();
+//   downloadAllImages(images);
+// };
+// run();
