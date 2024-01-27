@@ -4,14 +4,35 @@ import mongoose from "mongoose";
 import session from "express-session";
 import * as dotenv from "dotenv";
 import router from "./api/index.js";
+import websocket from "./websocket.js";
+import cors from "cors";
+import * as cloudinary from "cloudinary";
 dotenv.config();
-const app = express();
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_ACCESS_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET_ACCESS_KEY,
+  secure: true,
+});
+import passport from "passport";
+import passportConfig from "./passport/config.js";
 
+const app = express();
+app.use(cors());
 //Set Up the Assets Folder
 // app.use(join(__dirname, "public"));
-
+app.use(
+  session({
+    secret: process.env.JWT_KEY,
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 // Passport Config
-// require('./config/passport')(passport);
+app.use(passport.initialize());
+// init passport on every route call.
+app.use(passport.session());
+passportConfig(passport);
 
 // DB Config
 const db = process.env.MONGO_URI;
@@ -33,15 +54,7 @@ app.set("view engine", "ejs");
 // Express body parser
 app.use(urlencoded({ extended: true }));
 app.use(json());
-
 // Express session
-app.use(
-  session({
-    secret: "secret",
-    resave: true,
-    saveUninitialized: true,
-  })
-);
 
 // // Passport middleware
 // app.use(initialize());
@@ -52,4 +65,6 @@ app.use("/api", router);
 
 const PORT = process.env.PORT || 8000;
 
-app.listen(PORT, console.log(`Server started on port ${PORT}`));
+const server = app.listen(PORT, console.log(`Server started on port ${PORT}`));
+
+websocket(server);

@@ -23,7 +23,6 @@ export const generateLocalKeyPair = () => {
   fs.writeFileSync("keys/private.pem", privateKey);
   console.log("loaded keys to pem file in keys folder");
 };
-
 const generateAesKey = (pass) =>
   crypto.createHash("sha256").update(pass).digest("base64").substr(0, 32);
 
@@ -39,7 +38,7 @@ const aesEncrypt = (buffer, key) => {
   return result;
 };
 
-const aesDecrypt = (encrypted, key) => {
+export const aesDecrypt = (encrypted, key) => {
   // Get the iv: the first 16 bytes
   const iv = encrypted.slice(0, PADDING);
   // Get the rest
@@ -72,8 +71,12 @@ const encryptWithPublicKey = (buffer) => {
 };
 
 const decryptBufferWithPrivateKey = async (buffer, password) => {
-  const privateKey = await decryptPrivateKey(password);
-  return crypto.privateDecrypt(privateKey, buffer); //returns buffer
+  try {
+    const privateKey = await decryptPrivateKey(password);
+    return crypto.privateDecrypt(privateKey, buffer); //returns buffer
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const encryptImageBuffer = (buffer) => {
@@ -91,54 +94,3 @@ export const decryptImageBuffer = async (buffer, encryptedHash, password) => {
   );
   return aesDecrypt(buffer, generateAesKey(passwordOfImage));
 };
-// encryptImage(imagePath);
-// decryptImage(imagePath, "");
-import * as cloudinary from "cloudinary";
-import * as streamifier from "streamifier";
-
-cloudinary.v2.config({
-  cloud_name: "hibyehibye",
-  api_key: "433544711529411",
-  api_secret: "d7QnLYuJ0BfYA-WuAwrxrrO2hLk",
-  secure: true,
-});
-
-const uploadImage = (buffer) => {
-  const cld_upload_stream = cloudinary.v2.uploader.upload_stream(
-    {
-      folder: "corrupted-images",
-      resource_type: "raw",
-    },
-    function (error, result) {
-      console.log(error, result);
-    }
-  );
-  streamifier.createReadStream(buffer).pipe(cld_upload_stream);
-};
-const fetchAllImages = async () => {
-  const res = await cloudinary.v2.search
-    .expression(
-      "folder:corrupted-images/*" // add your folder
-    )
-    .sort_by("public_id")
-    .execute();
-  return res.resources.map((v) => ({ name: v.asset_id, url: v.secure_url }));
-};
-const downloadAllImages = (imageUrls) => {
-  imageUrls.forEach(async (image) => {
-    const res = await fetch(image.url);
-    const imagePath = `sampleData/${image.name}.jpeg`;
-    await fs.promises.writeFile(
-      imagePath,
-      Buffer.from(await res.arrayBuffer())
-    );
-    decryptImage(imagePath, "@01");
-  });
-};
-
-// uploadImage(encryptImageBuffer("sampleData/sample.jpeg"));
-// const run = async () => {
-//   const images = await fetchAllImages();
-//   downloadAllImages(images);
-// };
-// run();

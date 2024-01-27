@@ -127,7 +127,7 @@ const fetchAllImages = async () => {
     )
     .sort_by("public_id")
     .execute();
-  return res.resources.map((v) => ({ name: v.asset_id, url: v.secure_url }));
+  return res.resources.map((v) => ({ name: v.public_id, url: v.secure_url }));
 };
 const downloadAllImages = (imageUrls) => {
   imageUrls.forEach(async (image) => {

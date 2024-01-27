@@ -1,14 +1,18 @@
-import { uploadImage } from "../helpers/cloudinary.js";
+import { CORRUPTED_FOLDER } from "../constants.js";
+import { deleteRaw, uploadRaw } from "../helpers/cloudinary.js";
 import {
   decryptImageBuffer,
   encryptImageBuffer,
 } from "../helpers/encryption.js";
 import Image from "../models/image.js";
-import * as fs from "fs";
+
+export const allImages = async () => {
+  return await Image.find();
+};
 
 export const getAllImages = async (req, res, next) => {
   try {
-    const images = await Image.find();
+    const images = await allImages();
 
     return res.status(200).json({
       success: true,
@@ -48,12 +52,9 @@ export const addImage = async (req, res, next) => {
   try {
     if (!req.file) throw new Error("no file attached");
     const encryptedInfo = encryptImageBuffer(req.file.buffer);
-
-    fs.writeFileSync("i1.jpeg", encryptedInfo.buffer);
-    fs.writeFileSync("key.txt", encryptedInfo.encryptedHash);
-    const result = await uploadImage(encryptedInfo.buffer);
+    const result = await uploadRaw(CORRUPTED_FOLDER, encryptedInfo.buffer);
     await Image.create({
-      asset_id: result.asset_id,
+      public_id: result.public_id,
       url: result.secure_url,
       hash: encryptedInfo.encryptedHash,
     });
@@ -81,6 +82,7 @@ export const addImage = async (req, res, next) => {
 export const deleteImageById = async (req, res, next) => {
   try {
     const image = await Image.findById(req.params.id);
+    await deleteRaw(image.public_id);
     if (!image) {
       return res.status(404).json({
         success: false,
@@ -95,6 +97,7 @@ export const deleteImageById = async (req, res, next) => {
       data: {},
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
       error: `Error Deleting Image: ${error.message}`,
@@ -102,9 +105,11 @@ export const deleteImageById = async (req, res, next) => {
   }
 };
 
+export const getImagesCount = async () => await Image.count();
+
 export const getNumberOfImages = async (req, res, next) => {
   try {
-    const count = await Image.count();
+    const count = await getImagesCount();
     return res.status(201).json({
       success: true,
       data: { count },

@@ -1,0 +1,8 @@
+export const EVENTS = {
+  COUNT_IMAGES: "COUNT_IMAGES",
+  DECODE_IMAGES: "DECODE_IMAGES",
+  ERROR: "ERROR",
+};
+
+export const CORRUPTED_FOLDER = "CORRUPTED_FOLDER";
+export const KEYS_FOLDER = "USER_KEYS";
