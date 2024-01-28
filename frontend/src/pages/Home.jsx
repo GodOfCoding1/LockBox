@@ -212,7 +212,7 @@ function Home() {
       {/* Footer */}
       <Box sx={{ bgcolor: "background.paper", p: 6 }} component="footer">
         <Typography variant="h6" align="center" gutterBottom>
-          Footer
+          About
         </Typography>
         <Typography
           variant="subtitle1"
@@ -220,7 +220,8 @@ function Home() {
           color="text.secondary"
           component="p"
         >
-          Something here to give the footer a purpose!
+          Your files are encrypted and can only be unlocked using your password.
+          You never have to worry about a data leak.
         </Typography>
       </Box>
       {/* End footer */}

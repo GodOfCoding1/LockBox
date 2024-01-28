@@ -9,7 +9,7 @@ export const allImages = async (id) => {
   return await Image.find({ user_id: id });
 };
 
-export const getImageById = async (req, res, next) => {
+export const getImageById = async (req, res) => {
   try {
     const image = await Image.findById(req.params.id);
     if (!image) {
