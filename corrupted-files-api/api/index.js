@@ -17,14 +17,24 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 //images
-router.route("/images").get(getAllImages);
-router.route("/images/id").get(getImageIds);
-router.route("/image/").all(upload.single("file")).post(addImage);
-router.route("/image/:id").delete(deleteImageById);
+router.route("/image").all(passportMiddlerwareWrapper("jwt")).get(getAllImages);
+router
+  .route("/image/id")
+  .all(passportMiddlerwareWrapper("jwt"))
+  .get(getImageIds);
+router
+  .route("/image/")
+  .all(passportMiddlerwareWrapper("jwt"))
+  .all(upload.single("file"))
+  .post(addImage);
+router
+  .route("/image/:id")
+  .all(passportMiddlerwareWrapper("jwt"))
+  .delete(deleteImageById);
 router
   .route("/image/:id/:password")
-  .get(getDecodedImageById)
-  .delete(deleteImageById);
+  .all(passportMiddlerwareWrapper("jwt"))
+  .get(getDecodedImageById);
 
 //user
 router
@@ -37,6 +47,6 @@ router
   .post(login);
 router
   .route("/user/info")
-  .all(passport.authenticate("jwt", { session: false }))
+  .all(passportMiddlerwareWrapper("jwt"))
   .get(getUserInfo);
 export default router;

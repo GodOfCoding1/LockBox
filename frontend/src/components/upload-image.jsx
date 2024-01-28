@@ -1,17 +1,14 @@
-import {
-  Alert,
-  Button,
-  CircularProgress,
-  Snackbar,
-  Stack,
-} from "@mui/material";
+import { Button, CircularProgress, Stack } from "@mui/material";
 import { useState } from "react";
+import InfoSnackBar from "./info-sncakbar";
+import { api } from "../utils/axios";
 
 const SingleFileUploader = () => {
   const [file, setFile] = useState(null);
   const [open, setOpen] = useState(false);
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsloading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleFileChange = (e) => {
     if (e.target.files) {
@@ -21,43 +18,32 @@ const SingleFileUploader = () => {
 
   const handleUpload = async () => {
     setIsloading(true);
-    const url = "http://localhost:8000/api/image/";
     const formData = new FormData();
     formData.append("file", file);
     formData.append("fileName", file.name);
     try {
-      const res = await fetch(url, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
+      const res = await api.post("/image/", formData);
       setIsloading(false);
-      setSuccess(data.success);
+      setSuccess(res.data.success);
       setOpen(true);
+      setMessage("Image Uplaoded!");
     } catch (error) {
       alert("some error occured");
       console.log(error);
+      if (!error.response) return;
+      setMessage(error.message + error.response.data.message);
+      setOpen(true);
+      setSuccess(false);
     }
-  };
-  const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setOpen(false);
   };
   return (
     <>
-      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert
-          onClose={handleClose}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          Image Uploaded
-        </Alert>
-      </Snackbar>
+      <InfoSnackBar
+        message={message}
+        type={success ? "success" : "error"}
+        open={open}
+        setOpen={setOpen}
+      />
       <Stack spacing={2}>
         <Button variant="contained" component="label">
           Choose File

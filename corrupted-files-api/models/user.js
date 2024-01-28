@@ -14,6 +14,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  encrypted_private_key_url: {
+    type: String,
+    required: true,
+  },
+  public_key_url: {
+    type: String,
+    required: true,
+  },
   master_password: {
     type: String,
     required: true,
@@ -54,8 +62,15 @@ userSchema.methods.matchPassword = async function (password) {
     throw new Error(error);
   }
 };
+userSchema.methods.matchMasterPassword = async function (master_password) {
+  try {
+    return await bcrypt.compare(master_password, this.master_password);
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 userSchema.methods.filteredJson = function () {
-  return ["username", "_id"].reduce(
+  return ["username", "id"].reduce(
     (prev, cur) => ({ ...prev, [cur]: this[cur] }),
     {}
   );

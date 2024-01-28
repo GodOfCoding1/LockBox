@@ -13,6 +13,10 @@ const ImageSchema = new mongoose.Schema({
     type: Buffer,
     required: true,
   },
+  user_id: {
+    type: String,
+    required: true,
+  },
   createdAt: { type: Date, default: Date.now() },
 });
 const Image = mongoose.model("corrupted-image", ImageSchema);

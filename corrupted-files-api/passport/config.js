@@ -1,7 +1,9 @@
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import User from "../models/user.js";
-const userFields = ["username", "_id"];
+import { generateUserKeys } from "../helpers/encryption.js";
+import { uploadRaw } from "../helpers/cloudinary.js";
+import { KEYS_FOLDER } from "../constants.js";
 export default (passport) => {
   passport.use(
     "local-signup",
@@ -18,8 +20,24 @@ export default (passport) => {
           if (userExists) {
             return done({ message: "user already exists" }, false);
           }
+          if (!req.body.master_password)
+            return done(
+              { message: "master_password is required field" },
+              false
+            );
+          //generate key pair
+          const keys = generateUserKeys(req.body.master_password);
+          const [publicRes, privateRes] = await Promise.all([
+            uploadRaw(KEYS_FOLDER, keys.publicKey),
+            uploadRaw(KEYS_FOLDER, keys.encryptedPrivateKey),
+          ]);
           // Create a new user with the user data provided
-          const user = await User.create(req.body);
+          const user = await User.create({
+            ...req.body,
+            encrypted_private_key_url: privateRes.secure_url,
+            public_key_url: publicRes.secure_url,
+          });
+
           return done(null, user.filteredJson());
         } catch (error) {
           console.log(error);

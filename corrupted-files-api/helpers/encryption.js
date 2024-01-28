@@ -1,13 +1,9 @@
 import * as crypto from "crypto";
-import * as fs from "fs";
 
 const algorithm = "aes-256-ctr";
-const privateKeyPath = "keys/private.pem";
-const publicKeyPath = "keys/public.pem";
-const AESKeyPath = "keys/public.key";
 const PADDING = 16;
 
-export const generateLocalKeyPair = () => {
+const generateLocalKeyPair = () => {
   const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
     modulusLength: 4096,
     publicKeyEncoding: {
@@ -19,10 +15,21 @@ export const generateLocalKeyPair = () => {
       format: "pem",
     },
   });
-  fs.writeFileSync("keys/public.pem", publicKey);
-  fs.writeFileSync("keys/private.pem", privateKey);
-  console.log("loaded keys to pem file in keys folder");
+  return { publicKey, privateKey };
 };
+const encryptPrivateKey = (password, buffer) => {
+  //encrypts generated local private key with aes
+  const key = generateAesKey(password);
+  return aesEncrypt(buffer, key);
+};
+export const generateUserKeys = (masterPass) => {
+  const keys = generateLocalKeyPair();
+  return {
+    publicKey: keys.publicKey,
+    encryptedPrivateKey: encryptPrivateKey(masterPass, keys.privateKey),
+  };
+};
+
 const generateAesKey = (pass) =>
   crypto.createHash("sha256").update(pass).digest("base64").substr(0, 32);
 
@@ -50,47 +57,49 @@ export const aesDecrypt = (encrypted, key) => {
   return result;
 };
 
-const encryptPrivateKey = async (password) => {
-  //encrypts generated local private key with aes
+const decryptPrivateKey = async (password, encryptedPrivateKeyBuffer) => {
   const key = generateAesKey(password);
-  const fileBuffer = await fs.promises.readFile(privateKeyPath);
-  const encryptedBuffer = aesEncrypt(fileBuffer, key);
-  fs.writeFileSync(privateKeyPath, encryptedBuffer);
+  const privateKey = aesDecrypt(encryptedPrivateKeyBuffer, key).toString(
+    "utf8"
+  );
+  if (privateKey) return privateKey; //returns text of decrypted private key
+  throw new Error("error in decoding private key");
 };
 
-const decryptPrivateKey = async (password) => {
-  const key = generateAesKey(password);
-  const fileBuffer = await fs.promises.readFile(privateKeyPath);
-  const privateKey = aesDecrypt(fileBuffer, key).toString("utf8");
-  return privateKey; //returns text of decrypted private key
-};
-
-const encryptWithPublicKey = (buffer) => {
-  const publicKey = fs.readFileSync(publicKeyPath, "utf8");
-  return crypto.publicEncrypt(publicKey, buffer); //returns buffer
-};
-
-const decryptBufferWithPrivateKey = async (buffer, password) => {
+const decryptBufferWithPrivateKey = async (
+  buffer,
+  password,
+  encryptedPrivateKeyBuffer
+) => {
   try {
-    const privateKey = await decryptPrivateKey(password);
+    const privateKey = await decryptPrivateKey(
+      password,
+      encryptedPrivateKeyBuffer
+    );
     return crypto.privateDecrypt(privateKey, buffer); //returns buffer
   } catch (error) {
     console.log(error);
   }
 };
 
-export const encryptImageBuffer = (buffer) => {
+export const encryptRawBuffer = (buffer, pubKeyBuffer) => {
   const password = generateRandomPassword();
   return {
     buffer: aesEncrypt(buffer, generateAesKey(password)),
-    encryptedHash: encryptWithPublicKey(password),
+    encryptedHash: crypto.publicEncrypt(pubKeyBuffer, password),
   };
 };
 
-export const decryptImageBuffer = async (buffer, encryptedHash, password) => {
+export const decryptRawBuffer = async (
+  buffer,
+  encryptedPrivateKeyBuffer,
+  encryptedHash,
+  password
+) => {
   const passwordOfImage = await decryptBufferWithPrivateKey(
     encryptedHash,
-    password
+    password,
+    encryptedPrivateKeyBuffer
   );
   return aesDecrypt(buffer, generateAesKey(passwordOfImage));
 };
