@@ -1,6 +1,5 @@
 import AppBar from "@mui/material/AppBar";
 import Button from "@mui/material/Button";
-import CameraIcon from "@mui/icons-material/PhotoCamera";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -10,13 +9,15 @@ import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import { Skeleton, TextField } from "@mui/material";
+import { IconButton, Skeleton, TextField } from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { useEffect, useState } from "react";
 import { Buffer } from "buffer";
 import AddDialog from "../components/add-card";
 import ViewImage from "../components/view-image";
 import { api } from "../utils/axios";
 import InfoSnackBar from "../components/info-sncakbar";
+import LockIcon from "@mui/icons-material/Lock";
 
 function Home() {
   const [password, setPassword] = useState("");
@@ -42,6 +43,9 @@ function Home() {
       setImageIds(res.data.data.ids);
     } catch (error) {
       console.log(error);
+      setMessage(error.message + ":" + error?.response?.data?.message);
+      setType("error");
+      setOpen(true);
     }
   };
 
@@ -52,6 +56,9 @@ function Home() {
       setImageIds((prev) => prev.filter((i) => i !== id));
     } catch (error) {
       console.log(error);
+      setMessage(error.message + ": " + error?.response?.data?.message);
+      setType("error");
+      setOpen(true);
     }
   };
 
@@ -99,12 +106,21 @@ function Home() {
   return (
     <div className="home">
       <CssBaseline />
-      <AppBar position="relative">
+      <AppBar position="static">
         <Toolbar>
-          <CameraIcon sx={{ mr: 2 }} />
-          <Typography variant="h6" color="inherit" noWrap>
-            Album layout
+          <IconButton color="inherit">
+            <LockIcon sx={{ mr: 2 }} />
+          </IconButton>
+          <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
+            LockBox
           </Typography>
+
+          <IconButton
+            color="inherit"
+            onClick={() => window.localStorage.removeItem("token")}
+          >
+            <LogoutIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
       <InfoSnackBar

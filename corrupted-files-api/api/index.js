@@ -2,14 +2,11 @@ import { Router } from "express";
 import {
   addImage,
   deleteImageById,
-  getAllImages,
   getDecodedImageById,
-  getImageById,
   getImageIds,
 } from "../controllers/image-controller.js";
 import multer from "multer";
 import { getUserInfo, login } from "../controllers/user-controller.js";
-import passport from "passport";
 import { passportMiddlerwareWrapper } from "../middlewares/passport.js";
 
 const router = Router();
@@ -17,7 +14,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 //images
-router.route("/image").all(passportMiddlerwareWrapper("jwt")).get(getAllImages);
 router
   .route("/image/id")
   .all(passportMiddlerwareWrapper("jwt"))

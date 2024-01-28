@@ -9,23 +9,6 @@ export const allImages = async (id) => {
   return await Image.find({ user_id: id });
 };
 
-export const getAllImages = async (req, res, next) => {
-  try {
-    const images = await allImages();
-
-    return res.status(200).json({
-      success: true,
-      count: images.length,
-      data: images,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: `Error Getting Images: ${error.message}`,
-    });
-  }
-};
-
 export const getImageById = async (req, res, next) => {
   try {
     const image = await Image.findById(req.params.id);
