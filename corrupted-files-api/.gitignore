@@ -13,4 +13,3 @@ config/keys.js
 Mongo Express Node Template.postman_collection.json
 .env
 keys
-build
