@@ -1,5 +1,4 @@
 import { WebSocketServer } from "ws";
-import queryString from "query-string";
 import { allImages, getImagesCount } from "./controllers/image-controller.js";
 import { EVENTS } from "./constants.js";
 import { decryptRawBuffer } from "./helpers/encryption.js";

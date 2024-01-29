@@ -1,11 +1,9 @@
 import express, { urlencoded, json } from "express";
-import expressLayouts from "express-ejs-layouts";
 import mongoose from "mongoose";
 import session from "express-session";
 import * as dotenv from "dotenv";
 import router from "./api/index.js";
 import websocket from "./websocket.js";
-import cors from "cors";
 import * as cloudinary from "cloudinary";
 dotenv.config();
 cloudinary.v2.config({
@@ -16,9 +14,11 @@ cloudinary.v2.config({
 });
 import passport from "passport";
 import passportConfig from "./passport/config.js";
+import path from "path";
 
 const app = express();
-app.use(cors());
+app.use(express.static("build"));
+
 //Set Up the Assets Folder
 // app.use(join(__dirname, "public"));
 app.use(
@@ -47,10 +47,6 @@ if (db) {
   throw new Error("No DB url provided");
 }
 
-// EJS
-app.use(expressLayouts);
-app.set("view engine", "ejs");
-
 // Express body parser
 app.use(urlencoded({ extended: true }));
 app.use(json());
@@ -61,6 +57,11 @@ app.use(json());
 // app.use(_session());
 
 // Routes
+app.get("*", (req, res, next) => {
+  if (req.path.includes("api")) return next();
+  res.sendFile(path.join(process.cwd(), "build", "index.html"));
+});
+
 app.use("/api", router);
 
 const PORT = process.env.PORT || 8000;
