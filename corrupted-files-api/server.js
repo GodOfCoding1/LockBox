@@ -15,8 +15,12 @@ cloudinary.v2.config({
 import passport from "passport";
 import passportConfig from "./passport/config.js";
 import path from "path";
+import morgan from "morgan";
 
 const app = express();
+app.use(
+  morgan(":method :url :status :res[content-length] - :response-time ms")
+);
 app.use(express.static("build"));
 
 //Set Up the Assets Folder
