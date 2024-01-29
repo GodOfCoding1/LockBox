@@ -18,6 +18,7 @@ import ViewImage from "../components/view-image";
 import { api } from "../utils/axios";
 import InfoSnackBar from "../components/info-sncakbar";
 import LockIcon from "@mui/icons-material/Lock";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [password, setPassword] = useState("");
@@ -28,6 +29,7 @@ function Home() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [type, setType] = useState(false);
+  const navigate = useNavigate();
 
   const openImage = (id) => {
     setCurrentIndex(imageIds.indexOf(id));
@@ -122,7 +124,10 @@ function Home() {
 
           <IconButton
             color="inherit"
-            onClick={() => window.localStorage.removeItem("token")}
+            onClick={() => {
+              window.localStorage.removeItem("token");
+              navigate("/login");
+            }}
           >
             <LogoutIcon />
           </IconButton>

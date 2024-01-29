@@ -14,6 +14,7 @@ cloudinary.v2.config({
 });
 import passport from "passport";
 import passportConfig from "./passport/config.js";
+import path from "path";
 
 const app = express();
 app.use(express.static("build"));
@@ -45,9 +46,6 @@ if (db) {
 } else {
   throw new Error("No DB url provided");
 }
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "build", "index.html"));
-});
 
 // Express body parser
 app.use(urlencoded({ extended: true }));
@@ -59,6 +57,11 @@ app.use(json());
 // app.use(_session());
 
 // Routes
+app.get("*", (req, res, next) => {
+  if (req.path.includes("api")) return next();
+  res.sendFile(path.join(process.cwd(), "build", "index.html"));
+});
+
 app.use("/api", router);
 
 const PORT = process.env.PORT || 8000;
