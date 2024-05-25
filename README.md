@@ -7,3 +7,4 @@ LockBox is a web app that allows you to encrypt your files and store them secure
 
 #### Tech
 - MERN Stack with passport js
+- Websocket- Used to delivery decrypted file buffers to the client.
