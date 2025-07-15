@@ -1,10 +1,10 @@
 import { Router } from "express";
 import {
-  addImage,
-  deleteImageById,
-  getDecodedImageById,
-  getImageIds,
-} from "../controllers/image-controller.js";
+  addFile,
+  deleteFileById,
+  getDecodedFileById,
+  getFileIds,
+} from "../controllers/file-controller.js";
 import multer from "multer";
 import { getUserInfo, login } from "../controllers/user-controller.js";
 import { passportMiddlerwareWrapper } from "../middlewares/passport.js";
@@ -13,24 +13,24 @@ const router = Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-//images
+//files
 router
-  .route("/image/id")
+  .route("/file/id")
   .all(passportMiddlerwareWrapper("jwt"))
-  .get(getImageIds);
+  .get(getFileIds);
 router
-  .route("/image/")
+  .route("/file/")
   .all(passportMiddlerwareWrapper("jwt"))
   .all(upload.single("file"))
-  .post(addImage);
+  .post(addFile);
 router
-  .route("/image/:id")
+  .route("/file/:id")
   .all(passportMiddlerwareWrapper("jwt"))
-  .delete(deleteImageById);
+  .delete(deleteFileById);
 router
-  .route("/image/:id/:password")
+  .route("/file/:id/:password")
   .all(passportMiddlerwareWrapper("jwt"))
-  .get(getDecodedImageById);
+  .get(getDecodedFileById);
 
 //user
 router

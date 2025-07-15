@@ -1,9 +1,9 @@
 import { Button, CircularProgress, Stack } from "@mui/material";
 import { useState } from "react";
 import InfoSnackBar from "./info-sncakbar";
-import { api } from "../utils/axios";
+import { postFile } from "../utils/axios";
 
-const SingleFileUploader = () => {
+const SingleFileUploader = ({ onUpload }) => {
   const [file, setFile] = useState(null);
   const [open, setOpen] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -18,23 +18,12 @@ const SingleFileUploader = () => {
 
   const handleUpload = async () => {
     setIsloading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileName", file.name);
-    try {
-      const res = await api.post("/image/", formData);
-      setIsloading(false);
-      setSuccess(res.data.success);
-      setOpen(true);
-      setMessage("Image Uplaoded!");
-    } catch (error) {
-      alert("some error occured");
-      console.log(error);
-      if (!error.response) return;
-      setMessage(error.message + error.response.data.message);
-      setOpen(true);
-      setSuccess(false);
-    }
+    const res = await postFile(file);
+    if (res.success) onUpload();
+    setIsloading(false);
+    setSuccess(res.success);
+    setOpen(true);
+    setMessage(res.success ? "File Uplaoded!" : res.error);
   };
   return (
     <>

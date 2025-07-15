@@ -1,11 +1,16 @@
 import { Button, Stack, TextField } from "@mui/material";
 import { useState } from "react";
+import { postFile } from "../utils/axios";
 
-const TextUploader = () => {
+const TextUploader = ({ onUpload }) => {
   const [text, setText] = useState("");
 
   const handleUpload = async () => {
-    // We will fill this out later
+    const file = new File([text], "text.txt", {
+      type: "text/plain",
+    });
+    const res = await postFile(file);
+    if (res.success) onUpload();
   };
 
   return (

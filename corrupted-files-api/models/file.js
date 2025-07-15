@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const ImageSchema = new mongoose.Schema({
+const FileSchema = new mongoose.Schema({
   public_id: {
     type: String,
     required: true,
@@ -17,7 +17,15 @@ const ImageSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  name: {
+    type: String,
+    required: true,
+  },
+  mimetype: {
+    type: String,
+    required: true,
+  },
   createdAt: { type: Date, default: Date.now() },
 });
-const Image = mongoose.model("corrupted-image", ImageSchema);
-export default Image;
+const File = mongoose.model("corrupted-file", FileSchema);
+export default File;
