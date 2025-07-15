@@ -27,7 +27,7 @@ app.use(express.static("build"));
 // app.use(join(__dirname, "public"));
 app.use(
   session({
-    secret: process.env.JWT_KEY,
+    secret: process.env.JWT_SECRET,
     resave: true,
     saveUninitialized: true,
   })

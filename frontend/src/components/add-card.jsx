@@ -10,10 +10,10 @@ import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import {
   FormControl,
-  FormHelperText,
   InputLabel,
   MenuItem,
   Select,
+  Stack,
 } from "@mui/material";
 import SingleFileUploader from "./upload-image";
 import TextUploader from "./upload-text";
@@ -58,30 +58,26 @@ export default function AddDialog() {
           <CloseIcon />
         </IconButton>
         <DialogContent dividers>
-          <FormControl sx={{ m: 1, minWidth: 120 }}>
-            <InputLabel id="select-type">Data Type</InputLabel>
-            <Select
-              labelId="select-type"
-              id="dataType"
-              value={type}
-              label="Data Type"
-              onChange={(e) => setType(e.target.value)}
-            >
-              <MenuItem value={"image"}>Image</MenuItem>
-              <MenuItem value={"text"}>Text</MenuItem>
-              <MenuItem value={"video"}>Video</MenuItem>
-            </Select>
-            <FormHelperText>
-              Select the type of data you want to encrypt
-            </FormHelperText>
-          </FormControl>
-          {type === "image" ? (
-            <SingleFileUploader />
-          ) : type === "text" ? (
-            <TextUploader />
-          ) : (
-            ""
-          )}
+          <Stack spacing={2}>
+            <FormControl fullWidth>
+              <InputLabel id="select-type">Data Type</InputLabel>
+              <Select
+                labelId="select-type"
+                id="dataType"
+                value={type}
+                label="Data Type"
+                onChange={(e) => setType(e.target.value)}
+              >
+                <MenuItem value={"image"}>Image</MenuItem>
+                <MenuItem value={"text"}>Text</MenuItem>
+              </Select>
+            </FormControl>
+            {type === "image" ? (
+              <SingleFileUploader />
+            ) : type === "text" ? (
+              <TextUploader />
+            ) : null}
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button autoFocus onClick={handleClose}>

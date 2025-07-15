@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Stack } from "@mui/material";
+import { Box, Button, CircularProgress, Stack } from "@mui/material";
 import { useState } from "react";
 import InfoSnackBar from "./info-sncakbar";
 import { api } from "../utils/axios";
@@ -50,14 +50,27 @@ const SingleFileUploader = () => {
           <input id="file" type="file" onChange={handleFileChange} hidden />
         </Button>
         {file && (
-          <section>
-            File details:
-            <ul>
-              <li>Name: {file.name}</li>
-              <li>Type: {file.type}</li>
-              <li>Size: {file.size} bytes</li>
-            </ul>
-          </section>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <img
+              src={URL.createObjectURL(file)}
+              alt={file.name}
+              style={{
+                width: "100%",
+                height: "auto",
+                maxHeight: "300px",
+                objectFit: "contain",
+              }}
+            />
+            <p>
+              {file.name} - {file.size} bytes
+            </p>
+          </Box>
         )}
 
         {file && (

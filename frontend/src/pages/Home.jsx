@@ -2,14 +2,13 @@ import AppBar from "@mui/material/AppBar";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
-import CssBaseline from "@mui/material/CssBaseline";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import { IconButton, Skeleton, TextField } from "@mui/material";
+import { IconButton, Skeleton } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useEffect, useState } from "react";
 import { Buffer } from "buffer";
@@ -21,7 +20,6 @@ import LockIcon from "@mui/icons-material/Lock";
 import { useNavigate } from "react-router-dom";
 
 function Home() {
-  const [password, setPassword] = useState("");
   const [imageIds, setImageIds] = useState([]);
   const [cardData, setCardData] = useState({});
   const [isViewerOpen, setViewerOpen] = useState(false);
@@ -69,6 +67,8 @@ function Home() {
   }, []);
 
   const connectSocket = () => {
+    const password = prompt("Enter your password");
+    if (!password) return;
     if (!window.localStorage.getItem("token")) window.location.href = "/login";
     const client = new window.WebSocket(
       (window.location.protocol === "https:" ? "wss://" : "ws://") +
@@ -111,9 +111,8 @@ function Home() {
   };
 
   return (
-    <div className="home">
-      <CssBaseline />
-      <AppBar position="static">
+    <>
+      <AppBar>
         <Toolbar>
           <IconButton color="inherit">
             <LockIcon sx={{ mr: 2 }} />
@@ -142,32 +141,14 @@ function Home() {
       <main>
         {/* Hero unit */}
 
-        <Stack
-          spacing={3}
-          sx={{
-            bgcolor: "background.paper",
-            py: 5,
-            px: 5,
-          }}
-          direction={"row"}
-        >
-          <TextField
-            id="password"
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button
-            sx={{ marginY: 1 }}
-            variant="contained"
-            onClick={connectSocket}
-          >
-            Connect
-          </Button>
-          <AddDialog />
-        </Stack>
+        <Container sx={{ py: 4 }}>
+          <Stack spacing={3} direction={"row"}>
+            <Button variant="contained" onClick={connectSocket}>
+              Unlock
+            </Button>
+            <AddDialog />
+          </Stack>
+        </Container>
 
         <Container maxWidth="md">
           <ViewImage
@@ -235,7 +216,7 @@ function Home() {
         </Typography>
       </Box>
       {/* End footer */}
-    </div>
+    </>
   );
 }
 

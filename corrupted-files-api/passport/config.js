@@ -72,7 +72,7 @@ export default (passport) => {
     new JwtStrategy(
       {
         jwtFromRequest: ExtractJwt.fromHeader("authorization"),
-        secretOrKey: process.env.JWT_KEY,
+        secretOrKey: process.env.JWT_SECRET,
       },
       async (jwtPayload, done) => {
         try {

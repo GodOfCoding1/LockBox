@@ -12,6 +12,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import { Stack } from "@mui/material";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialog-paper": {
+    backgroundColor: "black",
+  },
   "& .MuiDialogContent-root": {
     padding: theme.spacing(2),
   },
@@ -34,18 +37,39 @@ export default function ViewImage({
     setOpen(false);
   };
 
-  const back = () => {
+  const back = React.useCallback(() => {
     setShift((prev) => (currentIdindex - prev - 1 >= 0 ? prev - 1 : prev));
-  };
-  const next = () => {
+  }, [currentIdindex]);
+
+  const next = React.useCallback(() => {
     setShift((prev) =>
       currentIdindex + prev + 1 >= imageIds.length ? prev : prev + 1
     );
-  };
+  }, [currentIdindex, imageIds.length]);
 
+  React.useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "ArrowLeft") {
+        back();
+      } else if (event.key === "ArrowRight") {
+        next();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, shift, back, next]);
   return (
     <React.Fragment>
-      <BootstrapDialog fullWidth onClose={handleClose} open={isOpen}>
+      <BootstrapDialog
+        fullWidth
+        maxWidth="lg"
+        onClose={handleClose}
+        open={isOpen}
+      >
         <DialogTitle sx={{ m: 0, p: 2 }}>
           Image {currentIdindex + shift + 1} of {imageIds.length}
         </DialogTitle>
