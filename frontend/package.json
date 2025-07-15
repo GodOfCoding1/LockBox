@@ -21,6 +21,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "postbuild": "rm -rf ../corrupted-files-api/build && mv build ../corrupted-files-api/build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
