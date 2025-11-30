@@ -11,11 +11,28 @@ const ImageSchema = new mongoose.Schema({
   },
   hash: {
     type: Buffer,
+    required: false,
+  },
+  isEncrypted: {
+    type: Boolean,
+    default: true,
     required: true,
   },
   user_id: {
     type: String,
     required: true,
+  },
+  mimeType: {
+    type: String,
+    required: false,
+  },
+  fileExtension: {
+    type: String,
+    required: false,
+  },
+  fileName: {
+    type: String,
+    required: false,
   },
   createdAt: { type: Date, default: Date.now() },
 });

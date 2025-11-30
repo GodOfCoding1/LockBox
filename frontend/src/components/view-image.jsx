@@ -9,7 +9,7 @@ import IconButton from "@mui/material/IconButton";
 import ArrowLeft from "@mui/icons-material/ArrowLeft";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import CloseIcon from "@mui/icons-material/Close";
-import { Stack } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -47,7 +47,7 @@ export default function ViewImage({
     <React.Fragment>
       <BootstrapDialog fullWidth onClose={handleClose} open={isOpen}>
         <DialogTitle sx={{ m: 0, p: 2 }}>
-          Image {currentIdindex + shift + 1} of {imageIds.length}
+          File {currentIdindex + shift + 1} of {imageIds.length}
         </DialogTitle>
         <IconButton
           onClick={handleClose}
@@ -62,13 +62,53 @@ export default function ViewImage({
         </IconButton>
         <DialogContent dividers>
           {cardData[imageIds[currentIdindex + shift]] && (
-            <img
-              style={{ width: "100%", height: "100%" }}
-              src={`data:image;base64,${
-                cardData[imageIds[currentIdindex + shift]].buffer
-              }`}
-              alt={imageIds[currentIdindex + shift]}
-            />
+            (() => {
+              const currentFile = cardData[imageIds[currentIdindex + shift]];
+              const mimeType = currentFile.mimeType || "image/jpeg";
+              const fileType = currentFile.type || "image";
+              
+              if (fileType === "audio") {
+                return (
+                  <div style={{ padding: "20px", textAlign: "center" }}>
+                    <audio
+                      controls
+                      autoPlay
+                      style={{ width: "100%", maxWidth: "600px" }}
+                      src={`data:${mimeType};base64,${currentFile.buffer}`}
+                    >
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                );
+              } else if (fileType === "image") {
+                return (
+                  <img
+                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                    src={`data:${mimeType};base64,${currentFile.buffer}`}
+                    alt={imageIds[currentIdindex + shift]}
+                  />
+                );
+              } else {
+                return (
+                  <div style={{ padding: "40px", textAlign: "center" }}>
+                    <Typography variant="h6" gutterBottom>
+                      {fileType || "File"} Preview
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      MIME Type: {mimeType}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      href={`data:${mimeType};base64,${currentFile.buffer}`}
+                      download={`file.${currentFile.fileExtension || "bin"}`}
+                      sx={{ mt: 2 }}
+                    >
+                      Download File
+                    </Button>
+                  </div>
+                );
+              }
+            })()
           )}
         </DialogContent>
         <DialogActions>

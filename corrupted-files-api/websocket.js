@@ -17,13 +17,28 @@ const decodeImages = async (
   const images = await allImages(userId);
   images.forEach(async (image) => {
     const imageBufferRes = await fetch(image.url);
-    const imageBuffer = await decryptRawBuffer(
-      Buffer.from(await imageBufferRes.arrayBuffer()),
-      privateKeyBuffer,
-      image.hash,
-      password
-    );
-    sendImage({ id: image._id, buffer: imageBuffer });
+    let imageBuffer;
+    
+    if (image.isEncrypted) {
+      // Decrypt the file if it's encrypted
+      imageBuffer = await decryptRawBuffer(
+        Buffer.from(await imageBufferRes.arrayBuffer()),
+        privateKeyBuffer,
+        image.hash,
+        password
+      );
+    } else {
+      // Return the file directly if it's not encrypted
+      imageBuffer = Buffer.from(await imageBufferRes.arrayBuffer());
+    }
+    
+    sendImage({ 
+      id: image._id, 
+      buffer: imageBuffer,
+      mimeType: image.mimeType || "image/jpeg",
+      fileExtension: image.fileExtension || "jpeg",
+      fileName: image.fileName || undefined,
+    });
   });
 };
 

@@ -2,6 +2,7 @@ import AppBar from "@mui/material/AppBar";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
+import CardHeader from "@mui/material/CardHeader"; // Added missing CardHeader import
 import CssBaseline from "@mui/material/CssBaseline";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
@@ -38,10 +39,12 @@ function Home() {
 
   const fetchIDs = async () => {
     try {
-      const res = await api.get("/image/id");
+      // Use generic /file/ endpoint that supports all file types
+      const res = await api.get("/file/id");
       if (!res.data.success) {
         return alert("some error occured");
       }
+      console.log("file ids", res.data.data.ids);
       setImageIds(res.data.data.ids);
     } catch (error) {
       console.log(error);
@@ -54,7 +57,8 @@ function Home() {
   const onDelete = async (id) => {
     try {
       if (!window.confirm("are you sure?")) return;
-      await api.delete(`image/${id}`);
+      // Use generic /file/ endpoint that supports all file types
+      await api.delete(`file/${id}`);
       setImageIds((prev) => prev.filter((i) => i !== id));
     } catch (error) {
       console.log(error);
@@ -70,14 +74,20 @@ function Home() {
 
   const connectSocket = () => {
     if (!window.localStorage.getItem("token")) window.location.href = "/login";
+    
+    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    let wsUrl;
+    
+    if (process.env.NODE_ENV === 'development') {
+      // In development, connect to port 8000
+      wsUrl = `${wsProtocol}${window.location.hostname}:8000/websocket`;
+    } else {
+      // In production, use the same host and port as the current page
+      wsUrl = `${wsProtocol}${window.location.host}/websocket`;
+    }
+    
     const client = new window.WebSocket(
-      (window.location.protocol === "https:" ? "wss://" : "ws://") +
-        window.location.hostname +
-        (window.location.port !== 80 && window.location.port !== 443
-          ? ":" + window.location.port
-          : "") +
-        "/websocket?token=" +
-        window.localStorage.getItem("token")
+      `${wsUrl}?token=${window.localStorage.getItem("token")}`
     );
     client.onopen = () => {
       client.send(JSON.stringify({ event: "DECODE_IMAGES", password }));
@@ -90,14 +100,30 @@ function Home() {
         setType("info");
         setOpen(true);
       }
-      if (data.event === "DECODE_IMAGES")
+      if (data.event === "DECODE_IMAGES") {
+        const mimeType = data.data.mimeType || "image/jpeg";
+        const fileExtension = data.data.fileExtension || "jpeg";
+        // Determine file type from mimeType
+        let fileType = "image";
+        if (mimeType.startsWith("audio/")) {
+          fileType = "audio";
+        } else if (mimeType.startsWith("video/")) {
+          fileType = "video";
+        } else if (mimeType.startsWith("image/")) {
+          fileType = "image";
+        }
+        
         setCardData((prev) => ({
           ...prev,
           [data.data.id]: {
             buffer: Buffer.from(data.data.buffer).toString("base64"),
-            type: "image",
+            type: fileType,
+            mimeType: mimeType,
+            fileExtension: fileExtension,
+            fileName: data.data.fileName, // Add file name from server
           },
         }));
+      }
       if (data.event === "ERROR") {
         setMessage(data.message);
         setType("error");
@@ -189,10 +215,42 @@ function Home() {
                     }}
                   >
                     {cardData[id] ? (
-                      <img
-                        src={`data:image;base64,${cardData[id].buffer}`}
-                        alt={id}
-                      />
+                      <>
+                        <CardHeader
+                          title={cardData[id].fileName || `File ${i + 1}`}
+                        />
+                        {cardData[id].type === "audio" ? (
+                          <div style={{ padding: "20px", textAlign: "center" }}>
+                            <audio
+                              controls
+                              style={{ width: "100%" }}
+                              src={`data:${cardData[id].mimeType};base64,${cardData[id].buffer}`}
+                            >
+                              Your browser does not support the audio element.
+                            </audio>
+                          </div>
+                        ) : cardData[id].type === "image" ? (
+                          <img
+                            src={`data:${cardData[id].mimeType || "image/jpeg"};base64,${cardData[id].buffer}`}
+                            alt={cardData[id].fileName || id}
+                            style={{ width: '100%', height: 'auto' }}
+                          />
+                        ) : (
+                          <div style={{ padding: "20px", textAlign: "center" }}>
+                            <Typography variant="body2">
+                              {cardData[id].type || "File"} file
+                            </Typography>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              href={`data:${cardData[id].mimeType};base64,${cardData[id].buffer}`}
+                              download={`${cardData[id].fileName || 'file'}.${cardData[id].fileExtension || "bin"}`}
+                            >
+                              Download
+                            </Button>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <Skeleton variant="rectangular" height={200} />
                     )}

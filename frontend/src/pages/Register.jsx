@@ -103,7 +103,7 @@ export default function SignIn() {
             fullWidth
             name="master_password"
             label="Master Password"
-            type="master_password"
+            type="password"
             id="master_password"
           />
           <Button

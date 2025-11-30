@@ -68,6 +68,7 @@ export default function AddDialog() {
               onChange={(e) => setType(e.target.value)}
             >
               <MenuItem value={"image"}>Image</MenuItem>
+              <MenuItem value={"audio"}>Audio (MP3)</MenuItem>
               <MenuItem value={"text"}>Text</MenuItem>
               <MenuItem value={"video"}>Video</MenuItem>
             </Select>
@@ -76,9 +77,13 @@ export default function AddDialog() {
             </FormHelperText>
           </FormControl>
           {type === "image" ? (
-            <SingleFileUploader />
+            <SingleFileUploader fileType="image" />
+          ) : type === "audio" ? (
+            <SingleFileUploader fileType="audio" />
           ) : type === "text" ? (
             <TextUploader />
+          ) : type === "video" ? (
+            <SingleFileUploader fileType="video" />
           ) : (
             ""
           )}

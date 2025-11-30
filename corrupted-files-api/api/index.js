@@ -13,7 +13,7 @@ const router = Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-//images
+//images (backward compatibility - now supports any file type)
 router
   .route("/image/id")
   .all(passportMiddlerwareWrapper("jwt"))
@@ -29,6 +29,25 @@ router
   .delete(deleteImageById);
 router
   .route("/image/:id/:password")
+  .all(passportMiddlerwareWrapper("jwt"))
+  .get(getDecodedImageById);
+
+//files (generic routes for any file type including MP3)
+router
+  .route("/file/id")
+  .all(passportMiddlerwareWrapper("jwt"))
+  .get(getImageIds);
+router
+  .route("/file/")
+  .all(passportMiddlerwareWrapper("jwt"))
+  .all(upload.single("file"))
+  .post(addImage);
+router
+  .route("/file/:id")
+  .all(passportMiddlerwareWrapper("jwt"))
+  .delete(deleteImageById);
+router
+  .route("/file/:id/:password")
   .all(passportMiddlerwareWrapper("jwt"))
   .get(getDecodedImageById);
 
