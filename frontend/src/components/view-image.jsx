@@ -1,6 +1,5 @@
 import * as React from "react";
 import Button from "@mui/material/Button";
-import { styled } from "@mui/material/styles";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -9,16 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import ArrowLeft from "@mui/icons-material/ArrowLeft";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import CloseIcon from "@mui/icons-material/Close";
-import { Stack, Typography } from "@mui/material";
-
-const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-  "& .MuiDialogContent-root": {
-    padding: theme.spacing(2),
-  },
-  "& .MuiDialogActions-root": {
-    padding: theme.spacing(1),
-  },
-}));
+import { Box, Stack, Typography } from "@mui/material";
 
 export default function ViewImage({
   imageIds,
@@ -43,85 +33,98 @@ export default function ViewImage({
     );
   };
 
+  const index = currentIdindex + shift;
+  const currentId = imageIds[index];
+  const currentFile = cardData[currentId];
+  const title =
+    currentFile?.fileName || `File ${index + 1} of ${imageIds.length}`;
+
   return (
-    <React.Fragment>
-      <BootstrapDialog fullWidth onClose={handleClose} open={isOpen}>
-        <DialogTitle sx={{ m: 0, p: 2 }}>
-          File {currentIdindex + shift + 1} of {imageIds.length}
-        </DialogTitle>
-        <IconButton
-          onClick={handleClose}
-          sx={{
-            position: "absolute",
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500],
-          }}
+    <Dialog fullWidth maxWidth="md" onClose={handleClose} open={isOpen}>
+      <DialogTitle sx={{ pr: 6 }}>{title}</DialogTitle>
+      <IconButton
+        aria-label="Close"
+        onClick={handleClose}
+        sx={{
+          position: "absolute",
+          right: 8,
+          top: 8,
+          color: "text.secondary",
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
+      <DialogContent dividers>
+        {currentFile && (
+          <FileStage file={currentFile} label={currentId} />
+        )}
+      </DialogContent>
+      <DialogActions sx={{ justifyContent: "space-between", px: 2 }}>
+        <Button onClick={back} disabled={index <= 0} startIcon={<ArrowLeft />}>
+          Previous
+        </Button>
+        <Typography variant="body2" color="text.secondary">
+          {index + 1} of {imageIds.length}
+        </Typography>
+        <Button
+          onClick={next}
+          disabled={index >= imageIds.length - 1}
+          endIcon={<ArrowRight />}
         >
-          <CloseIcon />
-        </IconButton>
-        <DialogContent dividers>
-          {cardData[imageIds[currentIdindex + shift]] && (
-            (() => {
-              const currentFile = cardData[imageIds[currentIdindex + shift]];
-              const mimeType = currentFile.mimeType || "image/jpeg";
-              const fileType = currentFile.type || "image";
-              
-              if (fileType === "audio") {
-                return (
-                  <div style={{ padding: "20px", textAlign: "center" }}>
-                    <audio
-                      controls
-                      autoPlay
-                      style={{ width: "100%", maxWidth: "600px" }}
-                      src={`data:${mimeType};base64,${currentFile.buffer}`}
-                    >
-                      Your browser does not support the audio element.
-                    </audio>
-                  </div>
-                );
-              } else if (fileType === "image") {
-                return (
-                  <img
-                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                    src={`data:${mimeType};base64,${currentFile.buffer}`}
-                    alt={imageIds[currentIdindex + shift]}
-                  />
-                );
-              } else {
-                return (
-                  <div style={{ padding: "40px", textAlign: "center" }}>
-                    <Typography variant="h6" gutterBottom>
-                      {fileType || "File"} Preview
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      MIME Type: {mimeType}
-                    </Typography>
-                    <Button
-                      variant="contained"
-                      href={`data:${mimeType};base64,${currentFile.buffer}`}
-                      download={`file.${currentFile.fileExtension || "bin"}`}
-                      sx={{ mt: 2 }}
-                    >
-                      Download File
-                    </Button>
-                  </div>
-                );
-              }
-            })()
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Stack direction={"row"} justifyContent={"space-between"}>
-            <Button onClick={back}>
-              <ArrowLeft />
-            </Button>
-            <Button onClick={next}>
-              <ArrowRight />
-            </Button>
-          </Stack>
-        </DialogActions>
-      </BootstrapDialog>
-    </React.Fragment>
+          Next
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+function FileStage({ file, label }) {
+  const mimeType = file.mimeType || "image/jpeg";
+  const fileType = file.type || "image";
+
+  return (
+    <Box
+      sx={{
+        bgcolor: "#0c0e12",
+        borderRadius: 2,
+        p: 2,
+        minHeight: 220,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {fileType === "audio" ? (
+        <audio
+          controls
+          autoPlay
+          style={{ width: "100%", maxWidth: 600 }}
+          src={`data:${mimeType};base64,${file.buffer}`}
+        >
+          Your browser does not support the audio element.
+        </audio>
+      ) : fileType === "image" ? (
+        <Box
+          component="img"
+          sx={{ width: "100%", maxHeight: "70vh", objectFit: "contain" }}
+          src={`data:${mimeType};base64,${file.buffer}`}
+          alt={file.fileName || label}
+        />
+      ) : (
+        <Stack spacing={1.5} alignItems="center" sx={{ py: 4, textAlign: "center" }}>
+          <Typography variant="h6">{fileType || "File"} preview</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {mimeType}
+          </Typography>
+          <Button
+            variant="contained"
+            href={`data:${mimeType};base64,${file.buffer}`}
+            download={`${file.fileName || "file"}.${file.fileExtension || "bin"}`}
+          >
+            Download file
+          </Button>
+        </Stack>
+      )}
+    </Box>
   );
 }

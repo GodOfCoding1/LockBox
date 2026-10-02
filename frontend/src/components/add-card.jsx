@@ -1,6 +1,5 @@
 import * as React from "react";
 import Button from "@mui/material/Button";
-import { styled } from "@mui/material/styles";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -14,67 +13,64 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Typography,
 } from "@mui/material";
 import SingleFileUploader from "./upload-image";
 import TextUploader from "./upload-text";
 
-const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-  "& .MuiDialogContent-root": {
-    padding: theme.spacing(2),
-  },
-  "& .MuiDialogActions-root": {
-    padding: theme.spacing(1),
-  },
-}));
-
-export default function AddDialog() {
-  const [open, setOpen] = React.useState(false);
-
+export default function AddDialog({ open, onOpen, onClose }) {
   const [type, setType] = React.useState("");
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
   const handleClose = () => {
-    setOpen(false);
+    onClose();
+    setType("");
   };
 
   return (
     <React.Fragment>
-      <Button sx={{ marginY: 1 }} variant="outlined" onClick={handleClickOpen}>
-        <AddIcon />
+      <Button
+        type="button"
+        variant="outlined"
+        onClick={onOpen}
+        startIcon={<AddIcon />}
+        sx={{ mt: { sm: 1 } }}
+      >
+        Add file
       </Button>
-      <BootstrapDialog fullWidth onClose={handleClose} open={open}>
-        <DialogTitle sx={{ m: 0, p: 2 }}>Encrypt Data</DialogTitle>
+      <Dialog fullWidth onClose={handleClose} open={open}>
+        <DialogTitle sx={{ pr: 6 }}>Add a file</DialogTitle>
         <IconButton
+          aria-label="Close"
           onClick={handleClose}
           sx={{
             position: "absolute",
             right: 8,
             top: 8,
-            color: (theme) => theme.palette.grey[500],
+            color: "text.secondary",
           }}
         >
           <CloseIcon />
         </IconButton>
         <DialogContent dividers>
-          <FormControl sx={{ m: 1, minWidth: 120 }}>
-            <InputLabel id="select-type">Data Type</InputLabel>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Choose what you want to store. Images, audio, and video can be encrypted
+            before upload.
+          </Typography>
+          <FormControl fullWidth>
+            <InputLabel id="select-type">Data type</InputLabel>
             <Select
               labelId="select-type"
               id="dataType"
               value={type}
-              label="Data Type"
+              label="Data type"
               onChange={(e) => setType(e.target.value)}
             >
               <MenuItem value={"image"}>Image</MenuItem>
-              <MenuItem value={"audio"}>Audio (MP3)</MenuItem>
+              <MenuItem value={"audio"}>Audio</MenuItem>
               <MenuItem value={"text"}>Text</MenuItem>
               <MenuItem value={"video"}>Video</MenuItem>
             </Select>
-            <FormHelperText>
-              Select the type of data you want to encrypt
-            </FormHelperText>
+            <FormHelperText>Select the type of data you want to store.</FormHelperText>
           </FormControl>
           {type === "image" ? (
             <SingleFileUploader fileType="image" />
@@ -84,16 +80,12 @@ export default function AddDialog() {
             <TextUploader />
           ) : type === "video" ? (
             <SingleFileUploader fileType="video" />
-          ) : (
-            ""
-          )}
+          ) : null}
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={handleClose}>
-            Close
-          </Button>
+          <Button onClick={handleClose}>Close</Button>
         </DialogActions>
-      </BootstrapDialog>
+      </Dialog>
     </React.Fragment>
   );
 }

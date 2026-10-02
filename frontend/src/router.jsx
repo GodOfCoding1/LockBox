@@ -3,6 +3,7 @@ import ProtectedRoute from "./utils/protected-routes";
 import Home from "./pages/Home";
 import SignIn from "./pages/Login";
 import Register from "./pages/Register";
+import NotFound from "./pages/NotFound";
 
 export default function Router() {
   const routes = useRoutes([
@@ -24,7 +25,7 @@ export default function Router() {
     },
     {
       path: "/404",
-      element: <h1>are you lost?</h1>,
+      element: <NotFound />,
     },
     {
       path: "*",

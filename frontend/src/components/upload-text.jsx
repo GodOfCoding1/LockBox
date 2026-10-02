@@ -11,12 +11,14 @@ const TextUploader = () => {
   return (
     <Stack minWidth={"100%"} spacing={2}>
       <TextField
-        placeholder="Text goes here.."
+        placeholder="Text goes here"
+        label="Text"
         multiline
-        rows={2}
+        rows={4}
         onChange={(e) => setText(e.target.value)}
         value={text}
-        maxRows={4}
+        maxRows={8}
+        fullWidth
       />
       {text && (
         <Button variant="contained" onClick={handleUpload}>

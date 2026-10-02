@@ -1,19 +1,14 @@
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
-import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
 import { api } from "../utils/axios";
 import InfoSnackBar from "../components/info-sncakbar";
 import { useNavigate } from "react-router-dom";
+import AuthShell from "../components/auth-shell";
 
-export default function SignIn() {
+export default function Register() {
   const navigate = useNavigate();
   const [open, setOpen] = React.useState(false);
   const [message, setMessage] = React.useState("");
@@ -28,12 +23,12 @@ export default function SignIn() {
     ) {
       setOpen(true);
       setSuccess(false);
-      setMessage("missing username or password or master password");
+      setMessage("Enter a username, account password, and master password.");
       return;
     }
     try {
       await api.post("/user/register", Object.fromEntries(data));
-      setMessage("Account registered!");
+      setMessage("Account created. Sign in to continue.");
       setOpen(true);
       setSuccess(true);
       navigate("/login", { replace: true });
@@ -47,82 +42,65 @@ export default function SignIn() {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <AuthShell
+      title="Create account"
+      subtitle="Your account password signs you in. Your master password unlocks files."
+    >
       <InfoSnackBar
         open={open}
         setOpen={setOpen}
         message={message}
         type={success ? "success" : "error"}
       />
-      <CssBaseline />
-      <Box
-        sx={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-          <LockOutlinedIcon />
-        </Avatar>
-        <Typography component="h1" variant="h5">
-          Sign in
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            autoComplete="username"
-            autoFocus
-          />
-          <TextField
-            margin="normal"
-            fullWidth
-            name="email"
-            label="Email"
-            type="email"
-            id="email"
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="master_password"
-            label="Master Password"
-            type="password"
-            id="master_password"
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Register
-          </Button>
-          <Grid container>
-            <Grid item>
-              <Link href="/login" variant="body2">
-                Already have account?
-              </Link>
-            </Grid>
-          </Grid>
-        </Box>
+      <Box component="form" onSubmit={handleSubmit} noValidate>
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          id="username"
+          label="Username"
+          name="username"
+          autoComplete="username"
+          autoFocus
+        />
+        <TextField
+          margin="normal"
+          fullWidth
+          name="email"
+          label="Email"
+          type="email"
+          id="email"
+          autoComplete="email"
+        />
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          name="password"
+          label="Account password"
+          type="password"
+          id="password"
+          autoComplete="new-password"
+          helperText="Used only to sign in."
+        />
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          name="master_password"
+          label="Master password"
+          type="password"
+          id="master_password"
+          autoComplete="new-password"
+          helperText="Encrypts the key used to unlock your files. This cannot be recovered from your account password."
+        />
+        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          Create account
+        </Button>
+        <Link href="/login" variant="body2">
+          Already have an account? Sign in
+        </Link>
       </Box>
-    </Container>
+    </AuthShell>
   );
 }

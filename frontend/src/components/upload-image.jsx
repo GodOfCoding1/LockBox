@@ -1,4 +1,13 @@
-import { Box, Button, CircularProgress, Stack, FormControlLabel, Checkbox, Typography, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Stack,
+  FormControlLabel,
+  Checkbox,
+  Typography,
+  TextField,
+} from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import InfoSnackBar from "./info-sncakbar";
 import { api } from "../utils/axios";
@@ -13,7 +22,9 @@ const SingleFileUploader = ({ fileType = "image" }) => {
   const [message, setMessage] = useState("");
   const [encrypt, setEncrypt] = useState(true);
 
-  // Determine accepted file types based on fileType prop
+  const typeLabel =
+    fileType === "audio" ? "Audio" : fileType === "image" ? "Image" : "File";
+
   const getAcceptAttribute = () => {
     switch (fileType) {
       case "audio":
@@ -23,13 +34,12 @@ const SingleFileUploader = ({ fileType = "image" }) => {
       case "video":
         return "video/*,.mp4,.webm";
       default:
-        return "*/*"; // Accept all files
+        return "*/*";
     }
   };
 
   const selectFile = useCallback((selectedFile) => {
     setFile(selectedFile);
-    // Set initial file name to the original file name without extension
     setFileName(selectedFile.name.replace(/\.[^/.]+$/, ""));
   }, []);
 
@@ -89,7 +99,9 @@ const SingleFileUploader = ({ fileType = "image" }) => {
   const handleClipboardRead = async () => {
     if (!navigator.clipboard?.read) {
       setSuccess(false);
-      setMessage("Clipboard image access is not supported by this browser. Use Ctrl+V or Cmd+V instead.");
+      setMessage(
+        "Clipboard image access is not supported by this browser. Use Ctrl+V or Cmd+V instead."
+      );
       setOpen(true);
       return;
     }
@@ -111,7 +123,9 @@ const SingleFileUploader = ({ fileType = "image" }) => {
       setOpen(true);
     } catch (error) {
       setSuccess(false);
-      setMessage("Could not read the clipboard. Allow clipboard access or use Ctrl+V or Cmd+V.");
+      setMessage(
+        "Could not read the clipboard. Allow clipboard access or use Ctrl+V or Cmd+V."
+      );
       setOpen(true);
     }
   };
@@ -120,32 +134,32 @@ const SingleFileUploader = ({ fileType = "image" }) => {
     setIsloading(true);
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("fileName", fileName || file.name.replace(/\.[^/.]+$/, ''));
+    formData.append("fileName", fileName || file.name.replace(/\.[^/.]+$/, ""));
     formData.append("encrypt", encrypt);
     try {
-      // Use generic /file/ endpoint that supports all file types
       const res = await api.post("/file/", formData);
       setIsloading(false);
       setSuccess(res.data.success);
       setOpen(true);
-      const fileTypeLabel = fileType === "audio" ? "Audio" : fileType === "image" ? "Image" : "File";
-      setMessage(`${fileTypeLabel} Uploaded!`);
-      // Reset file input after successful upload
+      setMessage(`${typeLabel} uploaded.`);
       setFile(null);
       setFileName("");
-      // Reload the page after a short delay to show the new file
       setTimeout(() => {
         window.location.reload();
       }, 1000);
     } catch (error) {
-      alert("some error occured");
+      setIsloading(false);
       console.log(error);
-      if (!error.response) return;
-      setMessage(error.message + error.response.data.message);
-      setOpen(true);
       setSuccess(false);
+      setMessage(
+        error.response
+          ? error.message + error.response.data.message
+          : "Upload failed. Try again."
+      );
+      setOpen(true);
     }
   };
+
   return (
     <>
       <InfoSnackBar
@@ -154,31 +168,53 @@ const SingleFileUploader = ({ fileType = "image" }) => {
         open={open}
         setOpen={setOpen}
       />
-      <Stack spacing={2}>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-          <Button variant="contained" component="label" fullWidth>
-            Choose {fileType === "audio" ? "Audio" : fileType === "image" ? "Image" : "File"} File
-            <input
-              id="file"
-              type="file"
-              accept={getAcceptAttribute()}
-              onChange={handleFileChange}
-              hidden
-            />
-          </Button>
-          {fileType === "image" && (
-            <Button variant="outlined" onClick={handleClipboardRead} fullWidth>
-              Paste image
-            </Button>
-          )}
-        </Stack>
-        {fileType === "image" && (
-          <Typography variant="body2" color="text.secondary">
-            Paste a copied screenshot with Ctrl+V or Cmd+V.
+      <Stack spacing={2} sx={{ mt: 2 }}>
+        <Box
+          sx={{
+            border: "1px dashed",
+            borderColor: "divider",
+            borderRadius: 2,
+            p: 3,
+            textAlign: "center",
+            bgcolor: "rgba(255, 255, 255, 0.02)",
+          }}
+        >
+          <Typography variant="body2" sx={{ mb: fileType === "image" ? 0.5 : 2 }}>
+            {fileType === "image"
+              ? "Choose an image to store"
+              : fileType === "audio"
+              ? "Choose an audio file to store"
+              : "Choose a file to store"}
           </Typography>
-        )}
+          {fileType === "image" && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Or paste a copied screenshot with Ctrl+V or Cmd+V.
+            </Typography>
+          )}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1}
+            justifyContent="center"
+          >
+            <Button variant="contained" component="label">
+              Choose {typeLabel.toLowerCase()}
+              <input
+                id="file"
+                type="file"
+                accept={getAcceptAttribute()}
+                onChange={handleFileChange}
+                hidden
+              />
+            </Button>
+            {fileType === "image" && (
+              <Button variant="outlined" onClick={handleClipboardRead}>
+                Paste image
+              </Button>
+            )}
+          </Stack>
+        </Box>
         {file && (
-          <section>
+          <Box>
             {previewUrl && (
               <Box
                 component="img"
@@ -189,30 +225,25 @@ const SingleFileUploader = ({ fileType = "image" }) => {
                   width: "100%",
                   maxHeight: 280,
                   mb: 2,
-                  borderRadius: 1,
+                  borderRadius: 2,
                   objectFit: "contain",
-                  bgcolor: "action.hover",
+                  bgcolor: "#0c0e12",
                 }}
               />
             )}
-            <Typography variant="body2" sx={{ mb: 1 }}>
-              File details:
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {file.name} · {file.type || "unknown type"} ·{" "}
+              {(file.size / 1024 / 1024).toFixed(2)} MB
             </Typography>
-            <ul style={{ margin: 0, paddingLeft: 20 }}>
-              <li>Name: {file.name}</li>
-              <li>Type: {file.type}</li>
-              <li>Size: {(file.size / 1024 / 1024).toFixed(2)} MB</li>
-            </ul>
             <TextField
               fullWidth
-              margin="normal"
-              label="File Name"
+              label="File name"
               value={fileName}
               onChange={(e) => setFileName(e.target.value)}
               variant="outlined"
               size="small"
             />
-          </section>
+          </Box>
         )}
 
         {file && (
@@ -226,7 +257,8 @@ const SingleFileUploader = ({ fileType = "image" }) => {
               }
               label={
                 <Typography variant="body2">
-                  Encrypt file {!encrypt && "(faster upload for large files)"}
+                  Encrypt file
+                  {!encrypt && " (faster upload for large files)"}
                 </Typography>
               }
             />
@@ -234,8 +266,11 @@ const SingleFileUploader = ({ fileType = "image" }) => {
               variant="contained"
               onClick={handleUpload}
               disabled={isLoading}
+              startIcon={
+                isLoading ? <CircularProgress size={16} color="inherit" /> : null
+              }
             >
-              {isLoading ? <CircularProgress /> : "Upload file"}
+              {isLoading ? "Uploading" : "Upload file"}
             </Button>
           </>
         )}
