@@ -12,7 +12,46 @@ import { useCallback, useEffect, useState } from "react";
 import InfoSnackBar from "./info-sncakbar";
 import { api } from "../utils/axios";
 
-const SingleFileUploader = ({ fileType = "image" }) => {
+const FILE_ACCEPT =
+  "image/*,.jpeg,.jpg,.png,.gif,.webp,audio/*,.mp3,.wav,.ogg,.aac,video/*,.mp4,.webm";
+
+const IMAGE_EXTENSIONS = new Set(["jpeg", "jpg", "png", "gif", "webp"]);
+const AUDIO_EXTENSIONS = new Set(["mp3", "wav", "ogg", "aac"]);
+const VIDEO_EXTENSIONS = new Set(["mp4", "webm"]);
+
+const extensionOf = (name) => {
+  const parts = (name || "").split(".");
+  if (parts.length < 2) return "";
+  return parts.pop().toLowerCase();
+};
+
+const detectFileKind = (file) => {
+  const mime = file?.type || "";
+  if (mime.startsWith("image/")) return "image";
+  if (mime.startsWith("audio/")) return "audio";
+  if (mime.startsWith("video/")) return "video";
+
+  const extension = extensionOf(file?.name);
+  if (IMAGE_EXTENSIONS.has(extension)) return "image";
+  if (AUDIO_EXTENSIONS.has(extension)) return "audio";
+  if (VIDEO_EXTENSIONS.has(extension)) return "video";
+  return "file";
+};
+
+const kindLabel = (kind) => {
+  switch (kind) {
+    case "image":
+      return "Image";
+    case "audio":
+      return "Audio";
+    case "video":
+      return "Video";
+    default:
+      return "File";
+  }
+};
+
+const SingleFileUploader = () => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
@@ -22,21 +61,7 @@ const SingleFileUploader = ({ fileType = "image" }) => {
   const [message, setMessage] = useState("");
   const [encrypt, setEncrypt] = useState(true);
 
-  const typeLabel =
-    fileType === "audio" ? "Audio" : fileType === "image" ? "Image" : "File";
-
-  const getAcceptAttribute = () => {
-    switch (fileType) {
-      case "audio":
-        return "audio/*,.mp3,.wav,.ogg,.aac";
-      case "image":
-        return "image/*,.jpeg,.jpg,.png,.gif,.webp";
-      case "video":
-        return "video/*,.mp4,.webm";
-      default:
-        return "*/*";
-    }
-  };
+  const fileKind = file ? detectFileKind(file) : "file";
 
   const selectFile = useCallback((selectedFile) => {
     setFile(selectedFile);
@@ -67,8 +92,6 @@ const SingleFileUploader = ({ fileType = "image" }) => {
   );
 
   useEffect(() => {
-    if (fileType !== "image") return undefined;
-
     const handlePaste = (event) => {
       const imageItem = Array.from(event.clipboardData?.items || []).find(
         (item) => item.kind === "file" && item.type.startsWith("image/")
@@ -83,10 +106,10 @@ const SingleFileUploader = ({ fileType = "image" }) => {
 
     window.addEventListener("paste", handlePaste);
     return () => window.removeEventListener("paste", handlePaste);
-  }, [fileType, selectClipboardImage]);
+  }, [selectClipboardImage]);
 
   useEffect(() => {
-    if (fileType !== "image" || !file) {
+    if (!file || detectFileKind(file) !== "image") {
       setPreviewUrl("");
       return undefined;
     }
@@ -94,7 +117,7 @@ const SingleFileUploader = ({ fileType = "image" }) => {
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
-  }, [file, fileType]);
+  }, [file]);
 
   const handleClipboardRead = async () => {
     if (!navigator.clipboard?.read) {
@@ -136,12 +159,13 @@ const SingleFileUploader = ({ fileType = "image" }) => {
     formData.append("file", file);
     formData.append("fileName", fileName || file.name.replace(/\.[^/.]+$/, ""));
     formData.append("encrypt", encrypt);
+    const uploadedLabel = kindLabel(detectFileKind(file));
     try {
       const res = await api.post("/file/", formData);
       setIsloading(false);
       setSuccess(res.data.success);
       setOpen(true);
-      setMessage(`${typeLabel} uploaded.`);
+      setMessage(`${uploadedLabel} uploaded.`);
       setFile(null);
       setFileName("");
       setTimeout(() => {
@@ -179,38 +203,30 @@ const SingleFileUploader = ({ fileType = "image" }) => {
             bgcolor: "rgba(255, 255, 255, 0.02)",
           }}
         >
-          <Typography variant="body2" sx={{ mb: fileType === "image" ? 0.5 : 2 }}>
-            {fileType === "image"
-              ? "Choose an image to store"
-              : fileType === "audio"
-              ? "Choose an audio file to store"
-              : "Choose a file to store"}
+          <Typography variant="body2" sx={{ mb: 0.5 }}>
+            Choose an image, audio, or video file to store
           </Typography>
-          {fileType === "image" && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Or paste a copied screenshot with Ctrl+V or Cmd+V.
-            </Typography>
-          )}
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Or paste a copied screenshot with Ctrl+V or Cmd+V.
+          </Typography>
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={1}
             justifyContent="center"
           >
             <Button variant="contained" component="label">
-              Choose {typeLabel.toLowerCase()}
+              Choose file
               <input
                 id="file"
                 type="file"
-                accept={getAcceptAttribute()}
+                accept={FILE_ACCEPT}
                 onChange={handleFileChange}
                 hidden
               />
             </Button>
-            {fileType === "image" && (
-              <Button variant="outlined" onClick={handleClipboardRead}>
-                Paste image
-              </Button>
-            )}
+            <Button variant="outlined" onClick={handleClipboardRead}>
+              Paste image
+            </Button>
           </Stack>
         </Box>
         {file && (
@@ -232,7 +248,7 @@ const SingleFileUploader = ({ fileType = "image" }) => {
               />
             )}
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              {file.name} · {file.type || "unknown type"} ·{" "}
+              {file.name} · {file.type || kindLabel(fileKind).toLowerCase()} ·{" "}
               {(file.size / 1024 / 1024).toFixed(2)} MB
             </Typography>
             <TextField

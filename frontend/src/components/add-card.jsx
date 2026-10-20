@@ -7,25 +7,11 @@ import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
-import {
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
-  Typography,
-} from "@mui/material";
+import { Divider, Typography } from "@mui/material";
 import SingleFileUploader from "./upload-image";
 import TextUploader from "./upload-text";
 
 export default function AddDialog({ open, onOpen, onClose }) {
-  const [type, setType] = React.useState("");
-
-  const handleClose = () => {
-    onClose();
-    setType("");
-  };
-
   return (
     <React.Fragment>
       <Button
@@ -37,11 +23,11 @@ export default function AddDialog({ open, onOpen, onClose }) {
       >
         Add file
       </Button>
-      <Dialog fullWidth onClose={handleClose} open={open}>
+      <Dialog fullWidth onClose={onClose} open={open}>
         <DialogTitle sx={{ pr: 6 }}>Add a file</DialogTitle>
         <IconButton
           aria-label="Close"
-          onClick={handleClose}
+          onClick={onClose}
           sx={{
             position: "absolute",
             right: 8,
@@ -52,38 +38,19 @@ export default function AddDialog({ open, onOpen, onClose }) {
           <CloseIcon />
         </IconButton>
         <DialogContent dividers>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Choose what you want to store. Images, audio, and video can be encrypted
-            before upload.
+          <Typography variant="body2" color="text.secondary">
+            Images, audio, and video are detected from the file and can be
+            encrypted before upload.
           </Typography>
-          <FormControl fullWidth>
-            <InputLabel id="select-type">Data type</InputLabel>
-            <Select
-              labelId="select-type"
-              id="dataType"
-              value={type}
-              label="Data type"
-              onChange={(e) => setType(e.target.value)}
-            >
-              <MenuItem value={"image"}>Image</MenuItem>
-              <MenuItem value={"audio"}>Audio</MenuItem>
-              <MenuItem value={"text"}>Text</MenuItem>
-              <MenuItem value={"video"}>Video</MenuItem>
-            </Select>
-            <FormHelperText>Select the type of data you want to store.</FormHelperText>
-          </FormControl>
-          {type === "image" ? (
-            <SingleFileUploader fileType="image" />
-          ) : type === "audio" ? (
-            <SingleFileUploader fileType="audio" />
-          ) : type === "text" ? (
-            <TextUploader />
-          ) : type === "video" ? (
-            <SingleFileUploader fileType="video" />
-          ) : null}
+          <SingleFileUploader />
+          <Divider sx={{ my: 3 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Or store text
+          </Typography>
+          <TextUploader />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Close</Button>
+          <Button onClick={onClose}>Close</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
